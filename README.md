@@ -5,7 +5,7 @@ It returns the date the vulnerability was published, the CVE ID, CVSS3 score, an
 ![A screenshot of the actual command line output](./preview.png)
 
 Inspired by the MSRC-PatchReview project:
-[https://github.com/f-bader/MSRC-PatchReview]https://github.com/f-bader/MSRC-PatchReview
+[https://github.com/f-bader/MSRC-PatchReview](https://github.com/f-bader/MSRC-PatchReview)
 
 ## Usage
 
