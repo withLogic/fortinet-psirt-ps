@@ -17,11 +17,11 @@ $ .\fortinet_psirt_patch_review.ps1
 Default is **human-readable** which will write the output to stdout. But if you would like to use the data in any way after the script is run you can use either **json** or **psobject**.
 
 ```bash
-$ .\fortinet_psirt_patch_review -Output json
+$ .\fortinet_psirt_patch_review.ps1 -Output json
 ```
 
 ```bash
-$ .\fortinet_psirt_patch_review -Output psobject
+$ .\fortinet_psirt_patch_review.ps1 -Output psobject
 ```
 
 ### Change CVE BaseScore
@@ -29,5 +29,5 @@ $ .\fortinet_psirt_patch_review -Output psobject
 The highest rated CVEs are by default all CVEs above **8.0**. This can be changed easily to fit your needs.
 
 ```bash
-$ .\fortinet_psirt_patch_review -BaseScore 6
+$ .\fortinet_psirt_patch_review.ps1 -BaseScore 6
 ```
