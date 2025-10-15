@@ -4,6 +4,9 @@ It returns the date the vulnerability was published, the CVE ID, CVSS3 score, an
 
 ![A screenshot of the actual command line output](./preview.png)
 
+Inspired by the MSRC-PatchReview project:
+[https://github.com/f-bader/MSRC-PatchReview]https://github.com/f-bader/MSRC-PatchReview
+
 ## Usage
 
 To get a report, just run the script without any additional parameters. Note that FortiGuard Lab's PSIRT RSS feed only includes the most recent items.
