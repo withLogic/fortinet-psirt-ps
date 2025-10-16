@@ -137,7 +137,6 @@ foreach ($item in $items) {
         $affectedProducts = @()
 
         if(-not $ExcludeProducts) {
-
             if ($html -match '(?is)<table[^>]*>(.*?)</table>') {
                 $tableHtml = $matches[1]
 
@@ -150,8 +149,14 @@ foreach ($item in $items) {
                         ($_ -replace '<[^>]+>', '').Trim()
                     }
 
-                    # If there are 3 columns and the first looks like a product/version
-                    if ($cells.Count -ge 1 -and $cells[0] -match '\S') {
+                    # Skip rows that don't have at least two columns
+                    if ($cells.Count -lt 2) { continue }
+
+                    # Skip if the second column says "Not affected" (case-insensitive)
+                    if ($cells[1] -match '^\s*not\s*affected\s*$') { continue }
+
+                    # Add first-column product/version
+                    if ($cells[0] -match '\S') {
                         $affectedProducts += $cells[0]
                     }
                 }
@@ -207,7 +212,6 @@ if ($filters.Count -gt 0) {
     }
 }
 
-
 if ($Output -eq "psobject") {
     $results
     exit 0
@@ -222,7 +226,7 @@ Write-Host "[+] FortiNet Security Updates Stats"-ForegroundColor Green
 Write-Host "[+] https://github.com/withlogic/fortinet-psirt-ps"-ForegroundColor Green 
 Write-Host "[+] Checking $feedType feed for entries" -ForegroundColor Green -NoNewline
 
-$total = $results.Count
+$total = ($results| Measure-Object).Count
 Write-Host "`n[+] Found a total of $total vulnerabilities" -ForegroundColor Green
 
 $impactGroups = $results | Group-Object -Property Impact | Sort-Object -Property Count -Descending
@@ -243,8 +247,8 @@ if (($highSeverity | Measure-Object).Count -gt 0) {
     }
 }
 
-if ($otherVulns.Count -gt 0) {
-    Write-Host "[+] Remaining Vulnerabilities" -ForegroundColor Green
+if (($otherVulns | Measure-Object).Count -gt 0) {
+    Write-Host "[+] Vulnerabilities" -ForegroundColor Green
     foreach ($item in $otherVulns) {
         $cvssFormatted = if ($item.CVSS -eq 0) { "N/A" } else { "{0:N1}" -f $item.CVSS }
         Write-Host "  [-] $($item.PDate) - $($item.CVE) - $cvssFormatted - $($item.Title) - $($item.URL)" -ForegroundColor Yellow
