@@ -44,11 +44,11 @@ $ .\fortinet_psirt_patch_review.ps1 -ProductFilter "FortiOS 7.4"
 ```
 
 ```bash
-$ .\fortinet_psirt_patch_review.ps1 -ProductFitler "fortios, fortimail"
+$ .\fortinet_psirt_patch_review.ps1 -ProductFilter "fortios, fortimail"
 ```
 
 ```bash
-$ .\fortinet_psirt_patch_review.ps1 -ProductFitler "FortiOS 7.4, fortimail"
+$ .\fortinet_psirt_patch_review.ps1 -ProductFilter "FortiOS 7.4, fortimail"
 ```
 
 ### Bypass product information lookup
