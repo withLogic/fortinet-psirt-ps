@@ -133,29 +133,21 @@ foreach ($item in $items) {
             ($matches[1] -replace '<[^>]+>', '').Trim()
         } else { "N/A" }
 
-        # Extract table of affected versions
         $affectedProducts = @()
 
         if(-not $ExcludeProducts) {
             if ($html -match '(?is)<table[^>]*>(.*?)</table>') {
                 $tableHtml = $matches[1]
 
-                # Find each <tr> row within the table
                 $rows = [regex]::Matches($tableHtml, '(?is)<tr>(.*?)</tr>')
 
                 foreach ($row in $rows) {
-                    # Find all <td> cells in the row
                     $cells = [regex]::Matches($row.Groups[1].Value, '(?is)<td[^>]*>(.*?)</td>') | ForEach-Object { 
                         ($_ -replace '<[^>]+>', '').Trim()
                     }
 
-                    # Skip rows that don't have at least two columns
                     if ($cells.Count -lt 2) { continue }
-
-                    # Skip if the second column says "Not affected" (case-insensitive)
                     if ($cells[1] -match '^\s*not\s*affected\s*$') { continue }
-
-                    # Add first-column product/version
                     if ($cells[0] -match '\S') {
                         $affectedProducts += $cells[0]
                     }
@@ -181,14 +173,14 @@ foreach ($item in $items) {
                 }
 
                 $results += [PSCustomObject]@{
-                    CVE       = $cve
-                    CVSS      = $numericCVSS
-                    Severity  = $severity
-                    Impact    = $impact
-                    Title     = $title
-                    URL       = $link
-                    PDate     = $pubDate.ToString("MM/dd/yyyy")
-                    Products  = ($affectedProducts -join ", ")
+                    CVE             = $cve
+                    CVSS            = $numericCVSS
+                    Severity        = $severity
+                    Impact          = $impact
+                    Title           = $title
+                    URL             = $link
+                    PublishDate     = $pubDate.ToString("MM/dd/yyyy")
+                    Products        = ($affectedProducts -join ", ")
                 }
             }
         }
