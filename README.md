@@ -34,3 +34,29 @@ The highest rated CVEs are by default all CVEs above **8.0**. This can be change
 ```bash
 $ .\fortinet_psirt_patch_review.ps1 -BaseScore 6
 ```
+
+### Filter on Products
+
+Default is all products, but you can filter the results by specific product verions or product families. Multiple products can be filtered if they are in a comma-separated list.
+
+```bash
+$ .\fortinet_psirt_patch_review.ps1 -ProductFilter "FortiOS 7.4"
+```
+
+```bash
+$ .\fortinet_psirt_patch_review.ps1 -ProductFitler "fortios, fortimail"
+```
+
+```bash
+$ .\fortinet_psirt_patch_review.ps1 -ProductFitler "FortiOS 7.4, fortimail"
+```
+
+### Bypass product information lookup
+
+By default the script will extract impacted products and present them as part of the result set. This can be bypassed.
+
+```bash
+$ .\fortinet_psirt_patch_review.ps1 -ExcludeProducts
+```
+
+Bypassing the product extraction can make the script quicker to execute and may be a good idea if specific product information is not needed.

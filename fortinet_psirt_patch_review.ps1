@@ -19,6 +19,13 @@
     - "json": Outputs the data in JSON format.
     - "psobject": Outputs the data as PowerShell objects for further processing.
 
+.PARAMETER ProductFilter
+    Comma-seperated value of products to filter the vulnerabilities results by. This can include specific version information, like FortiOS 7.4, or overall product categories like FortiOS. 
+    The values are not case sensitive and you can mix specific product versions and overall products, i.e "FortiOS 7.4, fortimail"
+
+.PARAMETER ExcludeProducts
+    Bypass the parsing of the product table. Can make the script execute quicker. Useful if getting impacted product detail is not needed. 
+
 .EXAMPLE
     .\fortinet_psirt_patch_review.ps1 -BaseScore 6
 
@@ -47,7 +54,11 @@ param(
     [float]$baseScore = 8.0,
 
     [ValidateSet("human-readable", "json", "psobject")]
-    [string]$Output = "human-readable"
+    [string]$Output = "human-readable",
+
+    [string]$ProductFilter,
+
+    [switch]$ExcludeProducts
 )
 
 $FeedUrl = "https://filestore.fortinet.com/fortiguard/rss/ir.xml"
@@ -74,6 +85,12 @@ if ($rss.rss -ne $null) {
 } else {
     Write-Host "Unknown feed format."
     exit
+}
+
+$filters = @()
+if ($ProductFilter) {
+    $ExcludeProducts = $false
+    $filters = $ProductFilter -split ',' | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ -ne "" }
 }
 
 $seenCVEs = @{}
@@ -116,6 +133,36 @@ foreach ($item in $items) {
             ($matches[1] -replace '<[^>]+>', '').Trim()
         } else { "N/A" }
 
+        # Extract table of affected versions
+        $affectedProducts = @()
+
+        if(-not $ExcludeProducts) {
+
+            if ($html -match '(?is)<table[^>]*>(.*?)</table>') {
+                $tableHtml = $matches[1]
+
+                # Find each <tr> row within the table
+                $rows = [regex]::Matches($tableHtml, '(?is)<tr>(.*?)</tr>')
+
+                foreach ($row in $rows) {
+                    # Find all <td> cells in the row
+                    $cells = [regex]::Matches($row.Groups[1].Value, '(?is)<td[^>]*>(.*?)</td>') | ForEach-Object { 
+                        ($_ -replace '<[^>]+>', '').Trim()
+                    }
+
+                    # If there are 3 columns and the first looks like a product/version
+                    if ($cells.Count -ge 1 -and $cells[0] -match '\S') {
+                        $affectedProducts += $cells[0]
+                    }
+                }
+            }
+        }
+
+        if ($affectedProducts.Count -eq 0) { 
+            $affectedProducts = @("N/A") 
+        }
+
+
         foreach ($cve in $cveids) {
             if (-not $seenCVEs.ContainsKey($cve)) {
                 $seenCVEs[$cve] = $true
@@ -136,6 +183,7 @@ foreach ($item in $items) {
                     Title     = $title
                     URL       = $link
                     PDate     = $pubDate.ToString("MM/dd/yyyy")
+                    Products  = ($affectedProducts -join ", ")
                 }
             }
         }
@@ -146,6 +194,19 @@ foreach ($item in $items) {
         $ProgressPreference = $storedProgressPreference
     }
 }
+
+if ($filters.Count -gt 0) {
+    $results = $results | Where-Object {
+        $productList = ($_.Products -split ',') | ForEach-Object { $_.Trim().ToLower() }
+        foreach ($filter in $filters) {
+            if ($productList -match ("^" + [regex]::Escape($filter))) {
+                return $true
+            }
+        }
+        return $false
+    }
+}
+
 
 if ($Output -eq "psobject") {
     $results
